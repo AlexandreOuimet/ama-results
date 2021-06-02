@@ -1,6 +1,6 @@
 <template>
   <v-card class="mb-12">
-    <v-card-title class="align-start">
+    <v-card-title v-if="!noHeader" class="align-start">
       <v-sheet
         :color="color"
         :width="fullHeader ? '100%' : undefined"
@@ -10,8 +10,12 @@
         rounded
       >
         <div class="px-8 py-6 black--text">
-          <div class="text-h4 font-weight-light">{{ title }}</div>
-          <div class="text-caption">{{ subtitle }}</div>
+          <div v-if="title != undefined" class="text-h4 font-weight-light">
+            {{ title }}
+          </div>
+          <div v-if="subtitle != undefined" class="text-caption">
+            {{ subtitle }}
+          </div>
         </div>
       </v-sheet>
     </v-card-title>
@@ -28,8 +32,10 @@ export default {
   props: {
     color: String,
     fullHeader: Boolean,
+    noHeader: Boolean,
     title: String,
     subtitle: String,
+    align: String,
   },
 };
 </script>

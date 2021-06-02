@@ -1,7 +1,13 @@
 <template>
   <custom-card color="primary" :title="raceName" :subtitle="sessionName">
     <template #content>
-      <v-data-table :items="racingLogs" :headers="headers" disable-sort>
+      <v-data-table
+        :items="racingLogs"
+        :headers="headers"
+        disable-sort
+        @click:row="onRowClicked"
+        class="hoverable"
+      >
         <template v-slot:[`item.position`]="{ item }">
           <v-row class="align-center">
             <v-col>
@@ -21,20 +27,18 @@
 </template>
 
 <script>
-import axios from "axios";
-import cheerio from "cheerio";
-
 import CustomCard from "../components/CustomCard.vue";
 
 export default {
   components: { CustomCard },
 
+  props: {
+    racingLogs: Array,
+    raceInformations: Object,
+  },
+
   data() {
     return {
-      racingLogs: [],
-      raceName: "",
-      sessionName: "",
-      track: "",
       headers: [
         {
           text: "",
@@ -86,43 +90,29 @@ export default {
     };
   },
 
-  created() {
-    var url = "http://americanmotocrosslive.com/xml/mx/RaceResultsWeb.xml";
-
-    axios.get(url).then((response) => {
-      const xml = response.data;
-      const $ = cheerio.load(xml);
-
-      // Get race information
-      const header = $("a")[0];
-      this.raceName = header.attribs["e"];
-      this.sessionName = header.attribs["s"];
-      this.track = header.attribs["t"];
-
-      // Get rider informations
-      const elements = $("b");
-
-      for (var element of elements) {
-        const rider = {
-          position: element.attribs["a"],
-          name: element.attribs["f"],
-          number: element.attribs["n"],
-          vehicle: element.attribs["v"],
-          location: element.attribs["t"],
-          class: element.attribs["c"],
-          nbLaps: element.attribs["l"],
-          lastLap: element.attribs["ll"],
-          bestLap: element.attribs["bl"],
-          diff: element.attribs["d"],
-          gap: element.attribs["g"],
-          status: element.attribs["s"],
-        };
-        this.racingLogs.push(rider);
-      }
-    });
+  computed: {
+    raceName() {
+      return this.raceInformations == undefined
+        ? ""
+        : this.raceInformations.raceName;
+    },
+    sessionName() {
+      return this.raceInformations == undefined
+        ? ""
+        : this.raceInformations.sessionName;
+    },
+    track() {
+      return this.raceInformations == undefined
+        ? ""
+        : this.raceInformations.track;
+    },
   },
 
   methods: {
+    onRowClicked(value) {
+      this.$emit("onRowClicked", value);
+    },
+
     getVehicleLogo(vehicle) {
       switch (vehicle) {
         case "HON CRF450R WE":
@@ -146,8 +136,8 @@ export default {
 };
 </script>
 
-<style lang="css">
-.divider {
-  width: 20px;
+<style scoped>
+.hoverable {
+  cursor: pointer;
 }
 </style>
